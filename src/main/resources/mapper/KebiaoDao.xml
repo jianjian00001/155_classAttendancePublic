@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.KebiaoDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.sections_types as sectionsTypes
+        ,a.clazz_id as clazzId
+        ,a.xueqi_types as xueqiTypes
+        ,a.kecheng as kecheng
+        ,a.paixu_number as paixuNumber
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.KebiaoView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,clazz.laoshi_id as clazzLaoshiId
+        ,clazz.clazz_name as clazzName
+        ,clazz.clazz_address as clazzAddress
+        ,clazz.clazz_number as clazzNumber
+
+        FROM kebiao  a
+        left JOIN clazz clazz ON a.clazz_id = clazz.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.sectionsTypes != null and params.sectionsTypes != ''">
+                and a.sections_types = #{params.sectionsTypes}
+            </if>
+            <if test="params.clazzId != null and params.clazzId != ''">
+                and (
+                    a.clazz_id = #{params.clazzId}
+                )
+            </if>
+            <if test="params.xueqiTypes != null and params.xueqiTypes != ''">
+                and a.xueqi_types = #{params.xueqiTypes}
+            </if>
+            <if test=" params.kecheng != '' and params.kecheng != null and params.kecheng != 'null' ">
+                and a.kecheng like CONCAT('%',#{params.kecheng},'%')
+            </if>
+            <if test="params.paixuNumberStart != null and params.paixuNumberStart != ''">
+                <![CDATA[  and a.paixu_number >= #{params.paixuNumberStart}   ]]>
+            </if>
+            <if test="params.paixuNumberEnd != null and params.paixuNumberEnd != ''">
+                <![CDATA[  and a.paixu_number <= #{params.paixuNumberEnd}   ]]>
+            </if>
+             <if test="params.paixuNumber != null and params.paixuNumber != ''">
+                and a.paixu_number = #{params.paixuNumber}
+             </if>
+
+                <!-- 判断班级的id不为空 -->
+            <if test=" params.clazzIdNotNull != '' and params.clazzIdNotNull != null and params.clazzIdNotNull != 'null' ">
+                and a.clazz_id IS NOT NULL
+            </if>
+            <if test="params.laoshiId != null  and params.laoshiId != ''">
+                and clazz.laoshi_id = #{params.laoshiId}
+            </if>
+            <if test=" params.clazzName != '' and params.clazzName != null and params.clazzName != 'null' ">
+                and clazz.clazz_name like CONCAT('%',#{params.clazzName},'%')
+            </if>
+            <if test=" params.clazzAddress != '' and params.clazzAddress != null and params.clazzAddress != 'null' ">
+                and clazz.clazz_address like CONCAT('%',#{params.clazzAddress},'%')
+            </if>
+            <if test="params.clazzNumberStart != null  and params.clazzNumberStart != '' ">
+                <![CDATA[  and clazz.clazz_number >= #{params.clazzNumberStart}   ]]>
+            </if>
+            <if test="params.clazzNumberEnd != null  and params.clazzNumberEnd != '' ">
+                <![CDATA[  and clazz.clazz_number <= #{params.clazzNumberEnd}   ]]>
+            </if>
+            <if test="params.clazzNumber != null  and params.clazzNumber != '' ">
+                and clazz.clazz_number = #{params.clazzNumber}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(clazz.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(clazz.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+        </where>
+
+        order by a.${params.orderBy}
+    </select>
+
+</mapper>

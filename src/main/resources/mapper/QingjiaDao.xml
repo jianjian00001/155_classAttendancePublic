@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.QingjiaDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yonghu_id as yonghuId
+        ,a.qingjia_name as qingjiaName
+        ,a.qingjia_types as qingjiaTypes
+        ,a.qingjia_kaishi_time as qingjiaKaishiTime
+        ,a.qingjia_jieshu_time as qingjiaJieshuTime
+        ,a.qingjia_content as qingjiaContent
+        ,a.qingjia_yesno_types as qingjiaYesnoTypes
+        ,a.qingjia_yesno_text as qingjiaYesnoText
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.QingjiaView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+
+        FROM qingjia  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test=" params.qingjiaName != '' and params.qingjiaName != null and params.qingjiaName != 'null' ">
+                and a.qingjia_name like CONCAT('%',#{params.qingjiaName},'%')
+            </if>
+            <if test="params.qingjiaTypes != null and params.qingjiaTypes != ''">
+                and a.qingjia_types = #{params.qingjiaTypes}
+            </if>
+            <if test=" params.qingjiaKaishiTimeStart != '' and params.qingjiaKaishiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qingjia_kaishi_time) >= UNIX_TIMESTAMP(#{params.qingjiaKaishiTimeStart}) ]]>
+            </if>
+            <if test=" params.qingjiaKaishiTimeEnd != '' and params.qingjiaKaishiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qingjia_kaishi_time) <= UNIX_TIMESTAMP(#{params.qingjiaKaishiTimeEnd}) ]]>
+            </if>
+            <if test=" params.qingjiaJieshuTimeStart != '' and params.qingjiaJieshuTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qingjia_jieshu_time) >= UNIX_TIMESTAMP(#{params.qingjiaJieshuTimeStart}) ]]>
+            </if>
+            <if test=" params.qingjiaJieshuTimeEnd != '' and params.qingjiaJieshuTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qingjia_jieshu_time) <= UNIX_TIMESTAMP(#{params.qingjiaJieshuTimeEnd}) ]]>
+            </if>
+            <if test=" params.qingjiaContent != '' and params.qingjiaContent != null and params.qingjiaContent != 'null' ">
+                and a.qingjia_content like CONCAT('%',#{params.qingjiaContent},'%')
+            </if>
+            <if test="params.qingjiaYesnoTypes != null and params.qingjiaYesnoTypes != ''">
+                and a.qingjia_yesno_types = #{params.qingjiaYesnoTypes}
+            </if>
+            <if test=" params.qingjiaYesnoText != '' and params.qingjiaYesnoText != null and params.qingjiaYesnoText != 'null' ">
+                and a.qingjia_yesno_text like CONCAT('%',#{params.qingjiaYesnoText},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断学生的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test="params.clazzId != null  and params.clazzId != ''">
+                and yonghu.clazz_id = #{params.clazzId}
+            </if>
+            <if test="params.clazzIds != null">
+                and yonghu.clazz_id in
+
+                <foreach item="item" index="index" collection="params.clazzIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
